@@ -6,16 +6,22 @@ using UnityEngine.EventSystems;
 
 public class InputManager : MonoBehaviour, IInputManager
 {
-    [SerializeField] LayerMask mouseInputLayerMask;
     [SerializeField] Camera mainCamera;
 
     private Action<Vector3> OnClickDownHandler;
+    private Action OnClickUpHandler;
+    private Action<Vector3> OnClickChangeHandler;
+
     private Action<Vector3> OnClickSecondDownHandler;
     private Action OnClickSecondUpHandler;
 
+    private LayerMask mouseInputLayerMask;
+    public LayerMask MouseInputLayerMask { get => mouseInputLayerMask; set => mouseInputLayerMask=value; }
 
-
-
+    private void Awake()
+    {
+        mainCamera = Camera.main;
+    }
     void Update()
     {
         GetInputPosition();
@@ -27,18 +33,46 @@ public class InputManager : MonoBehaviour, IInputManager
     {
         if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
         {
-            var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray.origin, ray.direction, out hit, Mathf.Infinity, mouseInputLayerMask))
-            {
-                Vector3 inputPosition = hit.point - transform.position;
-                OnClickDownHandler?.Invoke(inputPosition);// checks if event is null, if not send the messege with VEctor3 InputPosition to them
+            CallActionOnClick((inputPosition)=> OnClickDownHandler?.Invoke(inputPosition));
 
 
-            }
+        }
+        if (Input.GetMouseButton(0))
+        {
+            CallActionOnClick((inputPosition) => OnClickChangeHandler?.Invoke(inputPosition));
+
+        }
+        if (Input.GetMouseButtonUp(0))
+        {
+            OnClickUpHandler?.Invoke();
+        }
+
+    }
+
+
+    private void CallActionOnClick(Action<Vector3> action)
+    {
+        Vector3? inputPosition = GetMousePosition();
+        if (inputPosition.HasValue)
+        {
+            // action?.Invoke(inputPosition.Value);// checks if event is null, if not send the messege with VEctor3 InputPosition to them
+            action(inputPosition.Value);
+            inputPosition = null;
+        }
+    }
+    private Vector3? GetMousePosition()
+    {
+        var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        Vector3? inputPosition = null;
+        if (Physics.Raycast(ray.origin, ray.direction, out hit, Mathf.Infinity, mouseInputLayerMask))
+        {
+            inputPosition = hit.point - transform.position;
+
 
         }
 
+        return inputPosition;
     }
 
     private void GetPanningPosition()
@@ -82,7 +116,23 @@ public class InputManager : MonoBehaviour, IInputManager
         OnClickSecondUpHandler -= listener;
     }
 
+    public void AddListenerOnClickUpEvent(Action listener)
+    {
+        OnClickUpHandler += listener;
+    }
 
+    public void AddListenerOnClickChangeEvent(Action<Vector3> listener)
+    {
+        OnClickChangeHandler += listener;
+    }
 
+    public void RemoveListenerOnClickUpEvent(Action listener)
+    {
+        OnClickUpHandler -= listener;
+    }
 
+    public void RemoveListenerOnClickChangeEvent(Action<Vector3> listener)
+    {
+        OnClickChangeHandler -= listener;
+    }
 }

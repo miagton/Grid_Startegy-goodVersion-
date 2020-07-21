@@ -32,6 +32,9 @@ public class GridStructure
         return positionOnGrid;
         
     }
+
+   
+
     private Vector2Int CalculateGridIndex(Vector3 gridPosition)
     {
         return new Vector2Int((int)(gridPosition.x / cellSize),  (int)(gridPosition.z / cellSize));
@@ -60,5 +63,19 @@ public class GridStructure
         else
             return false;
     }
-   
+
+    public GameObject GetStructureFromGrid(Vector3 gridPosition)
+    {
+        var cellIndex = CalculateGridIndex(gridPosition);
+        
+        var currentObject=grid[cellIndex.y, cellIndex.x].GetStructure();// adding a structure to current cell
+        return currentObject;
+    }
+
+    public void RemoveStructureFromGrid(Vector3 gridPosition)
+    {
+        var cellIndex = CalculateGridIndex(gridPosition);
+        grid[cellIndex.y, cellIndex.x].RemoveStructure();
+    }
+
 }

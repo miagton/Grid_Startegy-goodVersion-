@@ -16,4 +16,14 @@ public class PlacementManager : MonoBehaviour
         GameObject newStructure=  Instantiate(buildingPrefab,ground.position+ gridPosition, Quaternion.identity);//adding ground to recieve same result whatever ground pos is
         grid.PlaceStructureOnGrid(newStructure, gridPosition);
     }
+    public void RemoveBuilding(Vector3 gridPosition,GridStructure grid)
+    {
+      var structure =  grid.GetStructureFromGrid(gridPosition);
+        if (structure != null)
+        {
+            Destroy(structure);
+            grid.RemoveStructureFromGrid(gridPosition);
+        }
+
+    }
 }
